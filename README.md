@@ -4,8 +4,8 @@ The Playfab client side implementation for an IO-games (Battle IO, Bomber IO and
 ## TODO
 - Login with Facebook
 - Login with Google Play
-- Export selling items to Playfab
 - Save scores to Playfab
 
 ## DONE
 - Export currencies to Playfab
+- Export selling items to Playfab (May changes structure later)
