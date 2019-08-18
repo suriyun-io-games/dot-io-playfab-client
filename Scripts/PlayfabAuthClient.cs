@@ -14,6 +14,7 @@ public class PlayfabAuthClient : MonoBehaviour
     [System.Serializable]
     public class FailEvent : UnityEvent<string> { }
 
+    public UnityEvent onLoggingIn;
     public UnityEvent onSuccess;
     public FailEvent onFail;
 
@@ -44,12 +45,12 @@ public class PlayfabAuthClient : MonoBehaviour
         if (isLoggingIn)
             return;
         isLoggingIn = true;
+        onLoggingIn.Invoke();
         FB.LogInWithReadPermissions(null, (result) =>
         {
             // If result has no errors, it means we have authenticated in Facebook successfully
             if (result == null || string.IsNullOrEmpty(result.Error))
             {
-                isLoggingIn = true;
                 // Login Success
                 PlayFabClientAPI.LoginWithFacebook(new LoginWithFacebookRequest
                 {
@@ -73,10 +74,10 @@ public class PlayfabAuthClient : MonoBehaviour
         if (isLoggingIn)
             return;
         isLoggingIn = true;
+        onLoggingIn.Invoke();
         Social.localUser.Authenticate((success, message) => {
             if (success)
             {
-                isLoggingIn = true;
                 // Login Success
                 var serverAuthCode = PlayGamesPlatform.Instance.GetServerAuthCode();
                 PlayFabClientAPI.LoginWithGoogleAccount(new LoginWithGoogleAccountRequest()
