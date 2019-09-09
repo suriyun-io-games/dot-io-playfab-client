@@ -11,6 +11,7 @@ public class PlayfabSave : BaseMonetizationSave
     [System.Serializable]
     public class ErrorEvent : UnityEvent<string> { }
 
+    public UnityEvent onRefresh;
     public ErrorEvent onError;
 
     private Dictionary<string, int> currencies;
@@ -29,7 +30,18 @@ public class PlayfabSave : BaseMonetizationSave
 
     public override bool AddCurrency(string name, int amount)
     {
-        // Do nothing, this will manage at Playfab service side
+        PlayFabClientAPI.AddUserVirtualCurrency(new AddUserVirtualCurrencyRequest()
+        {
+            VirtualCurrency = name,
+            Amount = amount,
+        }, (result) =>
+        {
+            lastRefreshTime = Time.unscaledTime;
+        }, (error) =>
+        {
+            Debug.LogError("[Playfab Save] " + error.ErrorMessage);
+            onError.Invoke(error.ErrorMessage);
+        });
         return true;
     }
 
@@ -64,9 +76,11 @@ public class PlayfabSave : BaseMonetizationSave
             {
                 items.Add(item.ItemId);
             }
+            onRefresh.Invoke();
         }, (error) =>
         {
             isRefreshing = false;
+            Debug.LogError("[Playfab Save] " + error.ErrorMessage);
             onError.Invoke(error.ErrorMessage);
         });
     }
