@@ -69,10 +69,12 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
                     Price = productData.Prices[currencyId],
                 }, (result) =>
                 {
+                    Debug.Log("[Playfab Monetization] Your purchase was successful");
                     if (callback != null)
                         callback.Invoke(true, string.Empty);
                 }, (error) =>
                 {
+                    Debug.LogError("[Playfab Monetization] " + error.ErrorMessage);
                     if (callback != null)
                         callback.Invoke(false, error.ErrorMessage);
                 });
@@ -135,7 +137,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
                 // Pass in the signature
                 Signature = payload.signature
             }, result => Debug.Log("Validation successful!"),
-               error => Debug.Log("Validation failed: " + error.GenerateErrorReport())
+               error => Debug.LogError("Validation failed: " + error.GenerateErrorReport())
             );
         }
         else if (receipt.Store.Equals("AppleAppStore"))
@@ -149,7 +151,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
                 // Pass in payload
                 ReceiptData = receipt.Payload
             }, result => Debug.Log("Validation successful!"),
-               error => Debug.Log("Validation failed: " + error.GenerateErrorReport())
+               error => Debug.LogError("Validation failed: " + error.GenerateErrorReport())
             );
         }
 
