@@ -16,6 +16,7 @@ public class PlayfabAuthClient : MonoBehaviour
 
     public UnityEvent onLoggingIn;
     public UnityEvent onSuccess;
+    public UnityEvent onCancel;
     public FailEvent onFail;
 
     private bool isLoggingIn;
@@ -49,6 +50,13 @@ public class PlayfabAuthClient : MonoBehaviour
         FB.LogInWithReadPermissions(null, (result) =>
         {
             // If result has no errors, it means we have authenticated in Facebook successfully
+            if (result.Cancelled)
+            {
+                isLoggingIn = false;
+                onCancel.Invoke();
+                return;
+            }
+
             if (result == null || string.IsNullOrEmpty(result.Error))
             {
                 // Login Success
