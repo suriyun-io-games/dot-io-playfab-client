@@ -5,6 +5,9 @@ using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+#if UNITY_PURCHASING && UNITY_EDITOR
+using UnityEngine.Purchasing;
+#endif
 using LitJson;
 
 public class PlayfabMonetizationExporter : MonoBehaviour
@@ -21,7 +24,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
     {
         var allItems = gameInstance.GetAllItems();
         var allBundles = monetizationManager.products;
-        var catalogItems = new List<CatalogItem>();
+        var catalogItems = new Dictionary<string, CatalogItem>();
         foreach (var item in allItems)
         {
             var virtualCurrencyPrices = new Dictionary<string, int>();
@@ -32,7 +35,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 if (!string.IsNullOrEmpty(price.id))
                     virtualCurrencyPrices[price.id] = price.amount;
             }
-            catalogItems.Add(new CatalogItem()
+            catalogItems[item.GetId()] = new CatalogItem()
             {
                 ItemId = item.GetId(),
                 CatalogVersion = exportingCatalogVersion,
@@ -41,9 +44,17 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 VirtualCurrencyPrices = virtualCurrencyPrices,
                 Consumable = new CatalogConsumable(),
                 Bundle = new CatalogBundle(),
-            });
+            };
         }
 
+        var iapCatalog = ProductCatalog.LoadDefaultCatalog();
+        var iapCatalogDict = new Dictionary<string, ProductCatalogItem>();
+        foreach (var product in iapCatalog.allProducts)
+        {
+            iapCatalogDict[product.id] = product;
+        }
+
+        ProductCatalogItem tempIAPItem;
         foreach (var bundle in allBundles)
         {
             var virtualCurrencyPrices = new Dictionary<string, int>();
@@ -58,20 +69,40 @@ public class PlayfabMonetizationExporter : MonoBehaviour
             {
                 rewardCurrencies[currency.id] = currency.amount;
             }
-            catalogItems.Add(new CatalogItem()
+
+            if (iapCatalogDict.TryGetValue(bundle.GetId(), out tempIAPItem))
             {
-                ItemId = bundle.GetId(),
-                CatalogVersion = exportingCatalogVersion,
-                DisplayName = bundle.GetTitle(),
-                Description = bundle.GetDescription(),
-                VirtualCurrencyPrices = virtualCurrencyPrices,
-                Consumable = new CatalogConsumable(),
-                Bundle = new CatalogBundle()
+                // Google play
+                catalogItems[tempIAPItem.GetStoreID(GooglePlay.Name)] = new CatalogItem()
                 {
-                    BundledItems = itemIds,
-                    BundledVirtualCurrencies = rewardCurrencies,
-                }
-            });
+                    ItemId = tempIAPItem.GetStoreID(GooglePlay.Name),
+                    CatalogVersion = exportingCatalogVersion,
+                    DisplayName = bundle.GetTitle(),
+                    Description = bundle.GetDescription(),
+                    VirtualCurrencyPrices = virtualCurrencyPrices,
+                    Consumable = new CatalogConsumable(),
+                    Bundle = new CatalogBundle()
+                    {
+                        BundledItems = itemIds,
+                        BundledVirtualCurrencies = rewardCurrencies,
+                    }
+                };
+                // Apple appstore
+                catalogItems[tempIAPItem.GetStoreID(AppleAppStore.Name)] = new CatalogItem()
+                {
+                    ItemId = tempIAPItem.GetStoreID(AppleAppStore.Name),
+                    CatalogVersion = exportingCatalogVersion,
+                    DisplayName = bundle.GetTitle(),
+                    Description = bundle.GetDescription(),
+                    VirtualCurrencyPrices = virtualCurrencyPrices,
+                    Consumable = new CatalogConsumable(),
+                    Bundle = new CatalogBundle()
+                    {
+                        BundledItems = itemIds,
+                        BundledVirtualCurrencies = rewardCurrencies,
+                    }
+                };
+            }
         }
 
         var dropTables = new List<DropTableItem>();
@@ -79,7 +110,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
         var catalog = new PlayfabCatalog()
         {
             CatalogVersion = exportingCatalogVersion,
-            Catalog = catalogItems,
+            Catalog = new List<CatalogItem>(catalogItems.Values),
             DropTables = dropTables,
         };
         var json = JsonMapper.ToJson(catalog);
@@ -104,7 +135,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 InitialDeposit = startAmount,
                 RechargeRate = 0,
                 RechargeMax = 0,
-                CurrencyCodeFull = code + " (" + name +")",
+                CurrencyCodeFull = code + " (" + name + ")",
             });
         }
         var json = JsonMapper.ToJson(currencies);
