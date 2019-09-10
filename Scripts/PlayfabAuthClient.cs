@@ -31,7 +31,8 @@ public class PlayfabAuthClient : MonoBehaviour
     {
         if (FB.IsLoggedIn)
         {
-            // Login Success
+            isLoggingIn = true;
+            onLoggingIn.Invoke();
             PlayFabClientAPI.LoginWithFacebook(new LoginWithFacebookRequest
             {
                 TitleId = PlayFabSettings.TitleId,
