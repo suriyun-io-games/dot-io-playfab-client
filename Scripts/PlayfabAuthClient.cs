@@ -24,21 +24,37 @@ public class PlayfabAuthClient : MonoBehaviour
     private void Start()
     {
         // Init Facebook
-        FB.Init();
+        FB.Init(OnFacebookInitialized);
+    }
 
-        // Init google play services
-        PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
-            .AddOauthScope("profile")
-            .RequestServerAuthCode(false)
-            .Build();
+    private void OnFacebookInitialized()
+    {
+        if (FB.IsLoggedIn)
+        {
+            // Login Success
+            PlayFabClientAPI.LoginWithFacebook(new LoginWithFacebookRequest
+            {
+                TitleId = PlayFabSettings.TitleId,
+                AccessToken = AccessToken.CurrentAccessToken.TokenString,
+                CreateAccount = true,
+            }, OnPlayfabFacebookAuthComplete, OnPlayfabFacebookAuthFailed);
+        }
+        else
+        {
+            // Init google play services
+            PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
+                .AddOauthScope("profile")
+                .RequestServerAuthCode(false)
+                .Build();
 
-        PlayGamesPlatform.InitializeInstance(config);
+            PlayGamesPlatform.InitializeInstance(config);
 
-        // recommended for debugging:
-        PlayGamesPlatform.DebugLogEnabled = true;
+            // recommended for debugging:
+            PlayGamesPlatform.DebugLogEnabled = true;
 
-        // Activate the Google Play Games platform
-        PlayGamesPlatform.Activate();
+            // Activate the Google Play Games platform
+            PlayGamesPlatform.Activate();
+        }
     }
 
     public void LoginWithFacebook()
