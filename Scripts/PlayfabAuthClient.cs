@@ -42,6 +42,7 @@ public class PlayfabAuthClient : MonoBehaviour
         }
         else
         {
+#if UNITY_ANDROID
             // Init google play services
             PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
                 .AddOauthScope("profile")
@@ -55,6 +56,7 @@ public class PlayfabAuthClient : MonoBehaviour
 
             // Activate the Google Play Games platform
             PlayGamesPlatform.Activate();
+#endif
         }
     }
 
@@ -96,6 +98,7 @@ public class PlayfabAuthClient : MonoBehaviour
 
     public void LoginWithGooglePlay()
     {
+#if UNITY_ANDROID
         if (isLoggingIn)
             return;
         isLoggingIn = true;
@@ -120,6 +123,7 @@ public class PlayfabAuthClient : MonoBehaviour
                 onFail.Invoke(message);
             }
         });
+#endif
     }
 
     private void OnPlayfabFacebookAuthComplete(LoginResult result)
