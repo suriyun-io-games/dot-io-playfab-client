@@ -80,7 +80,10 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                     DisplayName = bundle.GetTitle(),
                     Description = bundle.GetDescription(),
                     VirtualCurrencyPrices = virtualCurrencyPrices,
-                    Consumable = new CatalogConsumable(),
+                    Consumable = new CatalogConsumable()
+                    {
+                        UsagePeriod = 3,
+                    },
                     Bundle = new CatalogBundle()
                     {
                         BundledItems = itemIds,
@@ -95,7 +98,10 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                     DisplayName = bundle.GetTitle(),
                     Description = bundle.GetDescription(),
                     VirtualCurrencyPrices = virtualCurrencyPrices,
-                    Consumable = new CatalogConsumable(),
+                    Consumable = new CatalogConsumable()
+                    {
+                        UsagePeriod = 3,
+                    },
                     Bundle = new CatalogBundle()
                     {
                         BundledItems = itemIds,
