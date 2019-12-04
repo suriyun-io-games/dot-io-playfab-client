@@ -6,6 +6,7 @@ using UnityEngine.Purchasing;
 #endif
 using PlayFab;
 using PlayFab.ClientModels;
+using PlayFab.Json;
 
 public class PlayfabOverridePurchaseFunctions : MonoBehaviour
 {
@@ -29,25 +30,35 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
             return;
         }
 
-        switch (productData.pricesOption)
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest()
         {
-            case InGameProductData.PricesOption.Alternative:
-                foreach (var price in productData.Prices)
-                {
-                    var currentAmount = MonetizationManager.Save.GetCurrency(price.Key);
-                    if (currentAmount >= price.Value)
-                    {
-                        BuyWithCurrencyIdFunction(productData, price.Key, callback);
-                        break;
-                    }
-                }
-                break;
-            case InGameProductData.PricesOption.Requisite:
-                Debug.LogError("[Playfab Monetization] Support only alternative prices");
+            FunctionName = "buyItem",
+            FunctionParameter = new
+            {
+                itemId = productData.GetId(),
+            }
+        }, (result) =>
+        {
+            Debug.Log("[Playfab Monetization] Your purchase was successful");
+            JsonObject jsonResult = (JsonObject)result.FunctionResult;
+            string error = (string)jsonResult["Error"];
+            if (string.IsNullOrEmpty(error))
+            {
+                string itemId = (string)jsonResult["ItemId"];
                 if (callback != null)
-                    callback.Invoke(false, "Support only alternative prices.");
-                break;
-        }
+                    callback.Invoke(true, string.Empty);
+            }
+            else
+            {
+                if (callback != null)
+                    callback.Invoke(false, error);
+            }
+        }, (error) =>
+        {
+            Debug.LogError("[Playfab Monetization] " + error.ErrorMessage);
+            if (callback != null)
+                callback.Invoke(false, error.ErrorMessage);
+        });
     }
 
     private static void BuyWithCurrencyIdFunction(InGameProductData productData, string currencyId, System.Action<bool, string> callback)
@@ -59,32 +70,36 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
             return;
         }
 
-        switch (productData.pricesOption)
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest()
         {
-            case InGameProductData.PricesOption.Alternative:
-                PlayFabClientAPI.PurchaseItem(new PurchaseItemRequest()
-                {
-                    ItemId = productData.GetId(),
-                    VirtualCurrency = currencyId,
-                    Price = productData.Prices[currencyId],
-                }, (result) =>
-                {
-                    Debug.Log("[Playfab Monetization] Your purchase was successful");
-                    if (callback != null)
-                        callback.Invoke(true, string.Empty);
-                }, (error) =>
-                {
-                    Debug.LogError("[Playfab Monetization] " + error.ErrorMessage);
-                    if (callback != null)
-                        callback.Invoke(false, error.ErrorMessage);
-                });
-                break;
-            case InGameProductData.PricesOption.Requisite:
-                Debug.LogError("[Playfab Monetization] Support only alternative prices");
+            FunctionName = "buyItemWithCurrencyId",
+            FunctionParameter = new
+            {
+                itemId = productData.GetId(),
+                currencyId
+            }
+        }, (result) =>
+        {
+            Debug.Log("[Playfab Monetization] Your purchase was successful");
+            JsonObject jsonResult = (JsonObject)result.FunctionResult;
+            string error = (string)jsonResult["Error"];
+            if (string.IsNullOrEmpty(error))
+            {
+                string itemId = (string)jsonResult["ItemId"];
                 if (callback != null)
-                    callback.Invoke(false, "Support only alternative prices.");
-                break;
-        }
+                    callback.Invoke(true, string.Empty);
+            }
+            else
+            {
+                if (callback != null)
+                    callback.Invoke(false, error);
+            }
+        }, (error) =>
+        {
+            Debug.LogError("[Playfab Monetization] " + error.ErrorMessage);
+            if (callback != null)
+                callback.Invoke(false, error.ErrorMessage);
+        });
     }
 
     private static void SaveAdsReward(AdsReward adsReward)
