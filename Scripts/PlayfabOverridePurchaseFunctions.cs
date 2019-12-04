@@ -44,7 +44,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
             string error = (string)jsonResult["Error"];
             if (string.IsNullOrEmpty(error))
             {
-                string itemId = (string)jsonResult["ItemId"];
+                List<object> itemId = (List<object>)jsonResult["ItemId"];
                 if (callback != null)
                     callback.Invoke(true, string.Empty);
             }
@@ -85,7 +85,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
             string error = (string)jsonResult["Error"];
             if (string.IsNullOrEmpty(error))
             {
-                string itemId = (string)jsonResult["ItemId"];
+                List<object> itemId = (List<object>)jsonResult["ItemId"];
                 if (callback != null)
                     callback.Invoke(true, string.Empty);
             }
@@ -104,7 +104,17 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
 
     private static void SaveAdsReward(AdsReward adsReward)
     {
-        // TODO: Call cloud script
+        // WIP, may have to export data for cloud scripts
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest()
+        {
+            FunctionName = "saveAdsReward"
+        }, (result) =>
+        {
+            Debug.Log("[Playfab Monetization] Your purchase was successful");
+        }, (error) =>
+        {
+            Debug.LogError("[Playfab Monetization] " + error.ErrorMessage);
+        });
     }
 
     private static PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs e)
