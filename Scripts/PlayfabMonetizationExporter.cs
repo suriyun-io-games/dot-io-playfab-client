@@ -42,6 +42,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 DisplayName = item.GetTitle(),
                 Description = item.GetDescription(),
                 VirtualCurrencyPrices = virtualCurrencyPrices,
+                CustomData = item.pricesOption == InGameProductData.PricesOption.Alternative ? "{\"PricesOption\":\"0\"}" : "{\"PricesOption\":\"1\"}",
                 Consumable = new CatalogConsumable(),
                 Bundle = new CatalogBundle(),
             };
