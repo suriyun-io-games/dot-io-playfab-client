@@ -5,6 +5,7 @@ The Playfab client side implementation for an IO-games (Battle IO, Bomber IO and
 - [Playfab SDK for Unity](https://api.playfab.com/sdks/unity)
 - [Facebook SDK for Unity](https://developers.facebook.com/docs/unity/downloads)
 - [Play game services plugin for Unity](https://github.com/playgameservices/play-games-plugin-for-unity/tree/android-java-client/current-build)
+- [Have to setup cloudcodes](https://github.com/insthync/dot-io-playfab-cloudcodes)
 
 ## Done
 - Export currencies to Playfab
@@ -18,7 +19,6 @@ The Playfab client side implementation for an IO-games (Battle IO, Bomber IO and
 - Purchasing items with real money
 
 ## Limitation
-- Cannot use Requisite price option for an in-game items
 - Play game services work with Android only
 
 ## How to use
