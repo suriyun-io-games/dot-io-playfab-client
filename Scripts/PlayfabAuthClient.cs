@@ -21,7 +21,7 @@ public class PlayfabAuthClient : MonoBehaviour
         Facebook,
         GooglePlay
     }
-
+    public bool autoLogin;
     public UnityEvent onLoggingIn;
     public UnityEvent onSuccess;
     public UnityEvent onCancel;
@@ -49,7 +49,7 @@ public class PlayfabAuthClient : MonoBehaviour
         // recommended for debugging:
         PlayGamesPlatform.DebugLogEnabled = true;
 
-        if (autoLoginType == LoginType.GooglePlay)
+        if (autoLogin && autoLoginType == LoginType.GooglePlay)
         {
             // Silent login
             if (isLoggingIn)
@@ -63,7 +63,7 @@ public class PlayfabAuthClient : MonoBehaviour
 
     private void OnFacebookInitialized()
     {
-        if (FB.IsLoggedIn && autoLoginType == LoginType.Facebook)
+        if (autoLogin && FB.IsLoggedIn && autoLoginType == LoginType.Facebook)
         {
             isLoggingIn = true;
             onLoggingIn.Invoke();
