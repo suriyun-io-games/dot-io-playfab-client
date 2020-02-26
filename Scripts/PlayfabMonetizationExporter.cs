@@ -25,13 +25,20 @@ public class PlayfabMonetizationExporter : MonoBehaviour
         var allItems = gameInstance.GetAllItems();
         var allBundles = monetizationManager.products;
         var catalogItems = new Dictionary<string, CatalogItem>();
-        foreach (var item in allItems)
+        if (allItems != null)
         {
-            var virtualCurrencyPrices = new Dictionary<string, int>();
-            if (!string.IsNullOrEmpty(item.price.id))
-                virtualCurrencyPrices[item.price.id] = item.price.amount;
-            foreach (var price in item.prices)
+            foreach (var item in allItems)
             {
+                if (item == null) continue;
+                var virtualCurrencyPrices = new Dictionary<string, int>();
+                if (!string.IsNullOrEmpty(item.price.id))
+                    virtualCurrencyPrices[item.price.id] = item.price.amount;
+                if (item.price != null)
+                {
+                    foreach (var price in item.prices)
+                    {
+                        if (price == null) continue;
+                        if (!string.IsNullOrEmpty(price.id))
                 if (!string.IsNullOrEmpty(price.id))
                     virtualCurrencyPrices[price.id] = price.amount;
             }
@@ -50,9 +57,13 @@ public class PlayfabMonetizationExporter : MonoBehaviour
 
         var iapCatalog = ProductCatalog.LoadDefaultCatalog();
         var iapCatalogDict = new Dictionary<string, ProductCatalogItem>();
-        foreach (var product in iapCatalog.allProducts)
+        if (iapCatalog.allProducts != null)
         {
-            iapCatalogDict[product.id] = product;
+            foreach (var product in iapCatalog.allProducts)
+            {
+                if (product == null) continue;
+                iapCatalogDict[product.id] = product;
+            }
         }
 
         ProductCatalogItem tempIAPItem;
@@ -130,20 +141,24 @@ public class PlayfabMonetizationExporter : MonoBehaviour
     public void ExportCurrencies()
     {
         var currencies = new List<PlayfabCurrency>();
-        foreach (var currency in monetizationManager.currencies)
+        if (monetizationManager.currencies != null)
         {
-            var code = currency.id;
-            var name = currency.name;
-            var startAmount = currency.startAmount;
-            currencies.Add(new PlayfabCurrency()
+            foreach (var currency in monetizationManager.currencies)
             {
-                CurrencyCode = code,
-                DisplayName = name,
-                InitialDeposit = startAmount,
-                RechargeRate = 0,
-                RechargeMax = 0,
-                CurrencyCodeFull = code + " (" + name + ")",
-            });
+                if (currency == null) continue;
+                var code = currency.id;
+                var name = currency.name;
+                var startAmount = currency.startAmount;
+                currencies.Add(new PlayfabCurrency()
+                {
+                    CurrencyCode = code,
+                    DisplayName = name,
+                    InitialDeposit = startAmount,
+                    RechargeRate = 0,
+                    RechargeMax = 0,
+                    CurrencyCodeFull = code + " (" + name + ")",
+                });
+            }
         }
         var json = JsonMapper.ToJson(currencies);
         var path = EditorUtility.SaveFilePanel("Export Currencies", Application.dataPath, "CURRENCIES", "json");
