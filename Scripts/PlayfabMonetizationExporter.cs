@@ -39,20 +39,21 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                     {
                         if (price == null) continue;
                         if (!string.IsNullOrEmpty(price.id))
-                if (!string.IsNullOrEmpty(price.id))
-                    virtualCurrencyPrices[price.id] = price.amount;
+                            virtualCurrencyPrices[price.id] = price.amount;
+                    }
+                }
+                catalogItems[item.GetId()] = new CatalogItem()
+                {
+                    ItemId = item.GetId(),
+                    CatalogVersion = exportingCatalogVersion,
+                    DisplayName = item.GetTitle(),
+                    Description = item.GetDescription(),
+                    VirtualCurrencyPrices = virtualCurrencyPrices,
+                    CustomData = item.pricesOption == InGameProductData.PricesOption.Alternative ? "{\"PricesOption\":\"0\"}" : "{\"PricesOption\":\"1\"}",
+                    Consumable = new CatalogConsumable(),
+                    Bundle = new CatalogBundle(),
+                };
             }
-            catalogItems[item.GetId()] = new CatalogItem()
-            {
-                ItemId = item.GetId(),
-                CatalogVersion = exportingCatalogVersion,
-                DisplayName = item.GetTitle(),
-                Description = item.GetDescription(),
-                VirtualCurrencyPrices = virtualCurrencyPrices,
-                CustomData = item.pricesOption == InGameProductData.PricesOption.Alternative ? "{\"PricesOption\":\"0\"}" : "{\"PricesOption\":\"1\"}",
-                Consumable = new CatalogConsumable(),
-                Bundle = new CatalogBundle(),
-            };
         }
 
         var iapCatalog = ProductCatalog.LoadDefaultCatalog();
@@ -67,59 +68,71 @@ public class PlayfabMonetizationExporter : MonoBehaviour
         }
 
         ProductCatalogItem tempIAPItem;
-        foreach (var bundle in allBundles)
+        if (allBundles != null)
         {
-            var virtualCurrencyPrices = new Dictionary<string, int>();
-            virtualCurrencyPrices.Add("RM", 0); // TODO: SET USD PRICE
-            var itemIds = new List<string>();
-            foreach (var item in bundle.items)
+            foreach (var bundle in allBundles)
             {
-                itemIds.Add(item.GetId());
-            }
-            var rewardCurrencies = new Dictionary<string, int>();
-            foreach (var currency in bundle.currencies)
-            {
-                rewardCurrencies[currency.id] = currency.amount;
-            }
+                if (bundle == null) continue;
+                var virtualCurrencyPrices = new Dictionary<string, int>();
+                virtualCurrencyPrices.Add("RM", 0); // TODO: SET USD PRICE
+                var itemIds = new List<string>();
+                if (bundle.items != null)
+                {
+                    foreach (var item in bundle.items)
+                    {
+                        if (item == null) continue;
+                        itemIds.Add(item.GetId());
+                    }
+                }
+                var rewardCurrencies = new Dictionary<string, int>();
+                if (bundle.items != null)
+                {
+                    foreach (var currency in bundle.currencies)
+                    {
+                        if (currency == null) continue;
+                        rewardCurrencies[currency.id] = currency.amount;
+                    }
+                }
 
-            if (iapCatalogDict.TryGetValue(bundle.GetId(), out tempIAPItem))
-            {
-                // Google play
-                catalogItems[tempIAPItem.GetStoreID(GooglePlay.Name)] = new CatalogItem()
+                if (iapCatalogDict.TryGetValue(bundle.GetId(), out tempIAPItem))
                 {
-                    ItemId = tempIAPItem.GetStoreID(GooglePlay.Name),
-                    CatalogVersion = exportingCatalogVersion,
-                    DisplayName = bundle.GetTitle(),
-                    Description = bundle.GetDescription(),
-                    VirtualCurrencyPrices = virtualCurrencyPrices,
-                    Consumable = new CatalogConsumable()
+                    // Google play
+                    catalogItems[tempIAPItem.GetStoreID(GooglePlay.Name)] = new CatalogItem()
                     {
-                        UsagePeriod = 3,
-                    },
-                    Bundle = new CatalogBundle()
+                        ItemId = tempIAPItem.GetStoreID(GooglePlay.Name),
+                        CatalogVersion = exportingCatalogVersion,
+                        DisplayName = bundle.GetTitle(),
+                        Description = bundle.GetDescription(),
+                        VirtualCurrencyPrices = virtualCurrencyPrices,
+                        Consumable = new CatalogConsumable()
+                        {
+                            UsagePeriod = 3,
+                        },
+                        Bundle = new CatalogBundle()
+                        {
+                            BundledItems = itemIds,
+                            BundledVirtualCurrencies = rewardCurrencies,
+                        }
+                    };
+                    // Apple appstore
+                    catalogItems[tempIAPItem.GetStoreID(AppleAppStore.Name)] = new CatalogItem()
                     {
-                        BundledItems = itemIds,
-                        BundledVirtualCurrencies = rewardCurrencies,
-                    }
-                };
-                // Apple appstore
-                catalogItems[tempIAPItem.GetStoreID(AppleAppStore.Name)] = new CatalogItem()
-                {
-                    ItemId = tempIAPItem.GetStoreID(AppleAppStore.Name),
-                    CatalogVersion = exportingCatalogVersion,
-                    DisplayName = bundle.GetTitle(),
-                    Description = bundle.GetDescription(),
-                    VirtualCurrencyPrices = virtualCurrencyPrices,
-                    Consumable = new CatalogConsumable()
-                    {
-                        UsagePeriod = 3,
-                    },
-                    Bundle = new CatalogBundle()
-                    {
-                        BundledItems = itemIds,
-                        BundledVirtualCurrencies = rewardCurrencies,
-                    }
-                };
+                        ItemId = tempIAPItem.GetStoreID(AppleAppStore.Name),
+                        CatalogVersion = exportingCatalogVersion,
+                        DisplayName = bundle.GetTitle(),
+                        Description = bundle.GetDescription(),
+                        VirtualCurrencyPrices = virtualCurrencyPrices,
+                        Consumable = new CatalogConsumable()
+                        {
+                            UsagePeriod = 3,
+                        },
+                        Bundle = new CatalogBundle()
+                        {
+                            BundledItems = itemIds,
+                            BundledVirtualCurrencies = rewardCurrencies,
+                        }
+                    };
+                }
             }
         }
 
