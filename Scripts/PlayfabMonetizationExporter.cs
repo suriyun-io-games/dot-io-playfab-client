@@ -97,41 +97,55 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 if (iapCatalogDict.TryGetValue(bundle.GetId(), out tempIAPItem))
                 {
                     // Google play
-                    catalogItems[tempIAPItem.GetStoreID(GooglePlay.Name)] = new CatalogItem()
+                    if (!string.IsNullOrEmpty(tempIAPItem.GetStoreID(GooglePlay.Name)))
                     {
-                        ItemId = tempIAPItem.GetStoreID(GooglePlay.Name),
-                        CatalogVersion = exportingCatalogVersion,
-                        DisplayName = bundle.GetTitle(),
-                        Description = bundle.GetDescription(),
-                        VirtualCurrencyPrices = virtualCurrencyPrices,
-                        Consumable = new CatalogConsumable()
+                        catalogItems[tempIAPItem.GetStoreID(GooglePlay.Name)] = new CatalogItem()
                         {
-                            UsagePeriod = 3,
-                        },
-                        Bundle = new CatalogBundle()
-                        {
-                            BundledItems = itemIds,
-                            BundledVirtualCurrencies = rewardCurrencies,
-                        }
-                    };
+                            ItemId = tempIAPItem.GetStoreID(GooglePlay.Name),
+                            CatalogVersion = exportingCatalogVersion,
+                            DisplayName = bundle.GetTitle(),
+                            Description = bundle.GetDescription(),
+                            VirtualCurrencyPrices = virtualCurrencyPrices,
+                            Consumable = new CatalogConsumable()
+                            {
+                                UsagePeriod = 3,
+                            },
+                            Bundle = new CatalogBundle()
+                            {
+                                BundledItems = itemIds,
+                                BundledVirtualCurrencies = rewardCurrencies,
+                            }
+                        };
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PlayfabMonetizationExporter] IAP items's GooglePlay store ID override does not set.");
+                    }
                     // Apple appstore
-                    catalogItems[tempIAPItem.GetStoreID(AppleAppStore.Name)] = new CatalogItem()
+                    if (!string.IsNullOrEmpty(tempIAPItem.GetStoreID(AppleAppStore.Name)))
                     {
-                        ItemId = tempIAPItem.GetStoreID(AppleAppStore.Name),
-                        CatalogVersion = exportingCatalogVersion,
-                        DisplayName = bundle.GetTitle(),
-                        Description = bundle.GetDescription(),
-                        VirtualCurrencyPrices = virtualCurrencyPrices,
-                        Consumable = new CatalogConsumable()
+                        catalogItems[tempIAPItem.GetStoreID(AppleAppStore.Name)] = new CatalogItem()
                         {
-                            UsagePeriod = 3,
-                        },
-                        Bundle = new CatalogBundle()
-                        {
-                            BundledItems = itemIds,
-                            BundledVirtualCurrencies = rewardCurrencies,
-                        }
-                    };
+                            ItemId = tempIAPItem.GetStoreID(AppleAppStore.Name),
+                            CatalogVersion = exportingCatalogVersion,
+                            DisplayName = bundle.GetTitle(),
+                            Description = bundle.GetDescription(),
+                            VirtualCurrencyPrices = virtualCurrencyPrices,
+                            Consumable = new CatalogConsumable()
+                            {
+                                UsagePeriod = 3,
+                            },
+                            Bundle = new CatalogBundle()
+                            {
+                                BundledItems = itemIds,
+                                BundledVirtualCurrencies = rewardCurrencies,
+                            }
+                        };
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PlayfabMonetizationExporter] IAP items's AppleAppStore store ID override does not set.");
+                    }
                 }
             }
         }
