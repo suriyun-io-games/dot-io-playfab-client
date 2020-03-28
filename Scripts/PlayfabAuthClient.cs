@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+#if PLAYFAB_FB
 using Facebook.Unity;
+#endif
+#if PLAYFAB_GPG
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
+#endif
 using PlayFab;
 using PlayFab.ClientModels;
 using LoginResult = PlayFab.ClientModels.LoginResult;
@@ -19,13 +23,16 @@ public class PlayfabAuthClient : MonoBehaviour
     {
         None,
         Facebook,
-        GooglePlay
+        GooglePlay,
+        PlayFab,
     }
     public bool autoLogin;
     public UnityEvent onLoggingIn;
     public UnityEvent onSuccess;
     public UnityEvent onCancel;
     public FailEvent onFail;
+    public string username;
+    public string password;
 
     private LoginType autoLoginType;
 
@@ -35,9 +42,11 @@ public class PlayfabAuthClient : MonoBehaviour
     {
         autoLoginType = (LoginType)PlayerPrefs.GetInt(KEY_LOGIN_TYPE, (int)LoginType.None);
         // Init Facebook
+#if PLAYFAB_FB
         FB.Init(OnFacebookInitialized);
+#endif
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && PLAYFAB_GPG
         // Init google play services
         PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
             .AddOauthScope("profile")
@@ -61,6 +70,7 @@ public class PlayfabAuthClient : MonoBehaviour
 #endif
     }
 
+#if PLAYFAB_FB
     private void OnFacebookInitialized()
     {
         if (autoLogin && FB.IsLoggedIn && autoLoginType == LoginType.Facebook)
@@ -75,9 +85,11 @@ public class PlayfabAuthClient : MonoBehaviour
             }, OnPlayfabFacebookAuthComplete, OnPlayfabFacebookAuthFailed);
         }
     }
+#endif
 
     public void LoginWithFacebook()
     {
+#if PLAYFAB_FB
         if (isLoggingIn)
             return;
         isLoggingIn = true;
@@ -110,11 +122,12 @@ public class PlayfabAuthClient : MonoBehaviour
                 onFail.Invoke(result.Error);
             }
         });
+#endif
     }
 
     public void LoginWithGooglePlay()
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && PLAYFAB_GPG
         if (isLoggingIn)
             return;
         isLoggingIn = true;
@@ -125,7 +138,7 @@ public class PlayfabAuthClient : MonoBehaviour
 
     private void PlayGamesAuthenticateResult(bool success, string message)
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && PLAYFAB_GPG
         if (success)
         {
             // Login Success
@@ -145,6 +158,24 @@ public class PlayfabAuthClient : MonoBehaviour
             onFail.Invoke(message);
         }
 #endif
+    }
+
+    public void LoginWithPlayFab()
+    {
+        PlayFabClientAPI.LoginWithPlayFab(new LoginWithPlayFabRequest()
+        {
+            Username = username,
+            Password = password
+        }, OnPlayfabLoginComplete, OnPlayfabLoginFailed);
+    }
+
+    public void RegisterPlayFabUser()
+    {
+        PlayFabClientAPI.RegisterPlayFabUser(new RegisterPlayFabUserRequest()
+        {
+            Username = username,
+            Password = password
+        }, OnPlayfabRegisterComplete, OnPlayfabRegisterFailed);
     }
 
     private void OnPlayfabFacebookAuthComplete(LoginResult result)
@@ -172,6 +203,34 @@ public class PlayfabAuthClient : MonoBehaviour
     {
         isLoggingIn = false;
         Debug.LogError("[GP Login Failed] " + error.ErrorMessage);
+        onFail.Invoke(error.ErrorMessage);
+    }
+
+    private void OnPlayfabLoginComplete(LoginResult result)
+    {
+        isLoggingIn = false;
+        onSuccess.Invoke();
+        SaveLoginType(LoginType.PlayFab);
+    }
+
+    private void OnPlayfabLoginFailed(PlayFabError error)
+    {
+        isLoggingIn = false;
+        Debug.LogError("[PF Login Failed] " + error.ErrorMessage);
+        onFail.Invoke(error.ErrorMessage);
+    }
+
+    private void OnPlayfabRegisterComplete(RegisterPlayFabUserResult result)
+    {
+        isLoggingIn = false;
+        onSuccess.Invoke();
+        SaveLoginType(LoginType.PlayFab);
+    }
+
+    private void OnPlayfabRegisterFailed(PlayFabError error)
+    {
+        isLoggingIn = false;
+        Debug.LogError("[PF Register Failed] " + error.ErrorMessage);
         onFail.Invoke(error.ErrorMessage);
     }
 
