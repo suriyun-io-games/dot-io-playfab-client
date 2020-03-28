@@ -174,7 +174,8 @@ public class PlayfabAuthClient : MonoBehaviour
         PlayFabClientAPI.RegisterPlayFabUser(new RegisterPlayFabUserRequest()
         {
             Username = username,
-            Password = password
+            Password = password,
+            RequireBothUsernameAndEmail = false
         }, OnPlayfabRegisterComplete, OnPlayfabRegisterFailed);
     }
 
