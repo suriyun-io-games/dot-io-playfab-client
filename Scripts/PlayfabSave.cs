@@ -12,12 +12,14 @@ public class PlayfabSave : BaseMonetizationSave
     public class ErrorEvent : UnityEvent<string> { }
 
     public UnityEvent onRefresh;
+    public UnityEvent onRefreshFirstTime;
     public ErrorEvent onError;
 
     private Dictionary<string, int> currencies;
     private readonly PurchasedItems items = new PurchasedItems();
     private float lastRefreshTime;
     private bool isRefreshing;
+    private bool isRefreshFirstTime;
 
     private void Update()
     {
@@ -77,6 +79,11 @@ public class PlayfabSave : BaseMonetizationSave
                 items.Add(item.ItemId);
             }
             onRefresh.Invoke();
+            if (!isRefreshFirstTime)
+            {
+                isRefreshFirstTime = true;
+                onRefreshFirstTime.Invoke();
+            }
         }, (error) =>
         {
             isRefreshing = false;
