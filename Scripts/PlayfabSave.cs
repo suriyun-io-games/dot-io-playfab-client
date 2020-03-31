@@ -11,18 +11,22 @@ public class PlayfabSave : BaseMonetizationSave
     [System.Serializable]
     public class ErrorEvent : UnityEvent<string> { }
 
+    public UnityEvent onRefreshing;
     public UnityEvent onRefresh;
     public UnityEvent onRefreshFirstTime;
     public ErrorEvent onError;
 
-    private Dictionary<string, int> currencies;
-    private readonly PurchasedItems items = new PurchasedItems();
-    private float lastRefreshTime;
-    private bool isRefreshing;
-    private bool isRefreshFirstTime;
+    private static Dictionary<string, int> currencies;
+    private static readonly PurchasedItems items = new PurchasedItems();
+    private static float lastRefreshTime;
+    private static bool isRefreshing;
+    private static bool isRefreshFirstTime;
 
     private void Update()
     {
+        if (!PlayfabAuthClient.IsLoggedIn)
+            return;
+
         if (Time.unscaledTime - lastRefreshTime >= refreshDuration)
         {
             lastRefreshTime = Time.unscaledTime;
@@ -66,9 +70,16 @@ public class PlayfabSave : BaseMonetizationSave
 
     public void GetInventory()
     {
+        GetInventoryInternal(this);
+    }
+
+    public static void GetInventoryInternal(PlayfabSave saveInstance)
+    {
         if (isRefreshing)
             return;
         isRefreshing = true;
+        if (saveInstance != null)
+            saveInstance.onRefreshing.Invoke();
         PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(), (result) =>
         {
             isRefreshing = false;
@@ -78,17 +89,20 @@ public class PlayfabSave : BaseMonetizationSave
             {
                 items.Add(item.ItemId);
             }
-            onRefresh.Invoke();
+            if (saveInstance != null)
+                saveInstance.onRefresh.Invoke();
             if (!isRefreshFirstTime)
             {
                 isRefreshFirstTime = true;
-                onRefreshFirstTime.Invoke();
+                if (saveInstance != null)
+                    saveInstance.onRefreshFirstTime.Invoke();
             }
         }, (error) =>
         {
             isRefreshing = false;
             Debug.LogError("[Playfab Save] " + error.ErrorMessage);
-            onError.Invoke(error.ErrorMessage);
+            if (saveInstance != null)
+                saveInstance.onError.Invoke(error.ErrorMessage);
         });
     }
 
