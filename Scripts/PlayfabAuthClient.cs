@@ -19,6 +19,9 @@ public class PlayfabAuthClient : MonoBehaviour
     public class FailEvent : UnityEvent<string> { }
 
     public const string KEY_LOGIN_TYPE = "LoginType";
+    public static bool IsLoggedIn { get; private set; }
+    public static string PlayFabId { get; private set; }
+    public static EntityTokenResponse EntityToken { get; private set; }
     public enum LoginType
     {
         None,
@@ -184,6 +187,9 @@ public class PlayfabAuthClient : MonoBehaviour
         isLoggingIn = false;
         onSuccess.Invoke();
         SaveLoginType(LoginType.Facebook);
+        IsLoggedIn = true;
+        PlayFabId = result.PlayFabId;
+        EntityToken = result.EntityToken;
     }
 
     private void OnPlayfabFacebookAuthFailed(PlayFabError error)
@@ -198,6 +204,9 @@ public class PlayfabAuthClient : MonoBehaviour
         isLoggingIn = false;
         onSuccess.Invoke();
         SaveLoginType(LoginType.GooglePlay);
+        IsLoggedIn = true;
+        PlayFabId = result.PlayFabId;
+        EntityToken = result.EntityToken;
     }
 
     private void OnPlayfabGooglePlayAuthFailed(PlayFabError error)
@@ -212,6 +221,9 @@ public class PlayfabAuthClient : MonoBehaviour
         isLoggingIn = false;
         onSuccess.Invoke();
         SaveLoginType(LoginType.PlayFab);
+        IsLoggedIn = true;
+        PlayFabId = result.PlayFabId;
+        EntityToken = result.EntityToken;
     }
 
     private void OnPlayfabLoginFailed(PlayFabError error)
@@ -226,6 +238,9 @@ public class PlayfabAuthClient : MonoBehaviour
         isLoggingIn = false;
         onSuccess.Invoke();
         SaveLoginType(LoginType.PlayFab);
+        IsLoggedIn = true;
+        PlayFabId = result.PlayFabId;
+        EntityToken = result.EntityToken;
     }
 
     private void OnPlayfabRegisterFailed(PlayFabError error)
