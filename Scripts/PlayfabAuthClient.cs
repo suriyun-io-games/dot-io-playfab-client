@@ -81,15 +81,20 @@ public class PlayfabAuthClient : MonoBehaviour
         {
             isLoggingIn = true;
             onLoggingIn.Invoke();
-            PlayFabClientAPI.LoginWithFacebook(new LoginWithFacebookRequest
-            {
-                TitleId = PlayFabSettings.TitleId,
-                AccessToken = AccessToken.CurrentAccessToken.TokenString,
-                CreateAccount = true,
-            }, OnPlayfabFacebookAuthComplete, OnPlayfabFacebookAuthFailed);
+            LoginWithFacebookToken();
         }
     }
 #endif
+
+    protected void LoginWithFacebookToken()
+    {
+        PlayFabClientAPI.LoginWithFacebook(new LoginWithFacebookRequest
+        {
+            TitleId = PlayFabSettings.TitleId,
+            AccessToken = AccessToken.CurrentAccessToken.TokenString,
+            CreateAccount = true,
+        }, OnPlayfabFacebookAuthComplete, OnPlayfabFacebookAuthFailed);
+    }
 
     public void LoginWithFacebook()
     {
@@ -98,6 +103,11 @@ public class PlayfabAuthClient : MonoBehaviour
             return;
         isLoggingIn = true;
         onLoggingIn.Invoke();
+        if (FB.IsLoggedIn)
+        {
+            // Logout to re-login
+            FB.LogOut();
+        }
         FB.LogInWithReadPermissions(null, (result) =>
         {
             // If result has no errors, it means we have authenticated in Facebook successfully
