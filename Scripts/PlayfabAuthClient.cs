@@ -28,6 +28,7 @@ public class PlayfabAuthClient : MonoBehaviour
         Facebook,
         GooglePlay,
         PlayFab,
+        Device,
     }
     public bool autoLogin;
     public UnityEvent onLoggingIn;
@@ -165,6 +166,10 @@ public class PlayfabAuthClient : MonoBehaviour
 
     public void LoginWithPlayFab()
     {
+        if (isLoggingIn)
+            return;
+        isLoggingIn = true;
+        onLoggingIn.Invoke();
         PlayFabClientAPI.LoginWithPlayFab(new LoginWithPlayFabRequest()
         {
             Username = username,
@@ -174,12 +179,42 @@ public class PlayfabAuthClient : MonoBehaviour
 
     public void RegisterPlayFabUser()
     {
+        if (isLoggingIn)
+            return;
+        isLoggingIn = true;
+        onLoggingIn.Invoke();
         PlayFabClientAPI.RegisterPlayFabUser(new RegisterPlayFabUserRequest()
         {
             Username = username,
             Password = password,
             RequireBothUsernameAndEmail = false
         }, OnPlayfabRegisterComplete, OnPlayfabRegisterFailed);
+    }
+
+    public void GuestLogin()
+    {
+#if UNITY_ANDROID
+        if (isLoggingIn)
+            return;
+        isLoggingIn = true;
+        onLoggingIn.Invoke();
+        PlayFabClientAPI.LoginWithAndroidDeviceID(new LoginWithAndroidDeviceIDRequest()
+        {
+            AndroidDeviceId = SystemInfo.deviceUniqueIdentifier,
+            CreateAccount = true,
+        }, OnPlayfabDeviceAuthComplete, OnPlayfabDeviceAuthFailed);
+#endif
+#if UNITY_IOS
+        if (isLoggingIn)
+            return;
+        isLoggingIn = true;
+        onLoggingIn.Invoke();
+        PlayFabClientAPI.LoginWithIOSDeviceID(new LoginWithIOSDeviceIDRequest()
+        {
+            DeviceId = SystemInfo.deviceUniqueIdentifier,
+            CreateAccount = true,
+        }, OnPlayfabDeviceAuthComplete, OnPlayfabDeviceAuthFailed);
+#endif
     }
 
     private void OnPlayfabFacebookAuthComplete(LoginResult result)
@@ -195,7 +230,7 @@ public class PlayfabAuthClient : MonoBehaviour
     private void OnPlayfabFacebookAuthFailed(PlayFabError error)
     {
         isLoggingIn = false;
-        Debug.LogError("[FB Login Failed] " + error.ErrorMessage);
+        Debug.LogError("[Facebook Login Failed] " + error.ErrorMessage);
         onFail.Invoke(error.ErrorMessage);
     }
 
@@ -212,7 +247,7 @@ public class PlayfabAuthClient : MonoBehaviour
     private void OnPlayfabGooglePlayAuthFailed(PlayFabError error)
     {
         isLoggingIn = false;
-        Debug.LogError("[GP Login Failed] " + error.ErrorMessage);
+        Debug.LogError("[Google Play Games Login Failed] " + error.ErrorMessage);
         onFail.Invoke(error.ErrorMessage);
     }
 
@@ -229,7 +264,7 @@ public class PlayfabAuthClient : MonoBehaviour
     private void OnPlayfabLoginFailed(PlayFabError error)
     {
         isLoggingIn = false;
-        Debug.LogError("[PF Login Failed] " + error.ErrorMessage);
+        Debug.LogError("[PlayFab Login Failed] " + error.ErrorMessage);
         onFail.Invoke(error.ErrorMessage);
     }
 
@@ -246,7 +281,24 @@ public class PlayfabAuthClient : MonoBehaviour
     private void OnPlayfabRegisterFailed(PlayFabError error)
     {
         isLoggingIn = false;
-        Debug.LogError("[PF Register Failed] " + error.ErrorMessage);
+        Debug.LogError("[PlayFab Register Failed] " + error.ErrorMessage);
+        onFail.Invoke(error.ErrorMessage);
+    }
+
+    private void OnPlayfabDeviceAuthComplete(LoginResult result)
+    {
+        isLoggingIn = false;
+        onSuccess.Invoke();
+        SaveLoginType(LoginType.Device);
+        IsLoggedIn = true;
+        PlayFabId = result.PlayFabId;
+        EntityToken = result.EntityToken;
+    }
+
+    private void OnPlayfabDeviceAuthFailed(PlayFabError error)
+    {
+        isLoggingIn = false;
+        Debug.LogError("[Device Login Failed] " + error.ErrorMessage);
         onFail.Invoke(error.ErrorMessage);
     }
 
