@@ -88,12 +88,14 @@ public class PlayfabAuthClient : MonoBehaviour
 
     protected void LoginWithFacebookToken()
     {
+#if PLAYFAB_FB
         PlayFabClientAPI.LoginWithFacebook(new LoginWithFacebookRequest
         {
             TitleId = PlayFabSettings.TitleId,
             AccessToken = AccessToken.CurrentAccessToken.TokenString,
             CreateAccount = true,
         }, OnPlayfabFacebookAuthComplete, OnPlayfabFacebookAuthFailed);
+#endif
     }
 
     public void LoginWithFacebook()
