@@ -5,7 +5,7 @@ using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-#if UNITY_PURCHASING && UNITY_EDITOR
+#if !NO_IAP && UNITY_PURCHASING && UNITY_EDITOR
 using UnityEngine.Purchasing;
 #endif
 using LitJson;
@@ -56,6 +56,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
             }
         }
 
+#if !NO_IAP && UNITY_PURCHASING
         var iapCatalog = ProductCatalog.LoadDefaultCatalog();
         var iapCatalogDict = new Dictionary<string, ProductCatalogItem>();
         if (iapCatalog.allProducts != null)
@@ -149,6 +150,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 }
             }
         }
+#endif
 
         var dropTables = new List<DropTableItem>();
 

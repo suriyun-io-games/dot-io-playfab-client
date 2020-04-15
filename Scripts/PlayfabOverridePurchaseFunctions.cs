@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
 #endif
 using PlayFab;
@@ -12,7 +12,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
 {
     private void Awake()
     {
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         InGameProductData.OverrideBuyFunction = BuyFunction;
         InGameProductData.OverrideBuyWithCurrencyIdFunction = BuyWithCurrencyIdFunction;
         MonetizationManager.OverrideSaveAdsReward = SaveAdsReward;
@@ -20,7 +20,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
 #endif
     }
 
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     private static void BuyFunction(InGameProductData productData, System.Action<bool, string> callback)
     {
         if (!productData.CanBuy())
