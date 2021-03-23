@@ -7,6 +7,11 @@ The Playfab client side implementation for an IO-games (Battle IO, Bomber IO and
 - [Play game services plugin for Unity](https://github.com/playgameservices/play-games-plugin-for-unity/tree/android-java-client/current-build)
 - [Have to setup cloudcodes](https://github.com/insthync/dot-io-playfab-cloudcodes)
 
+## Scripting Define Symbols
+You have to add following symbols to `Scripting Define Symbols` to enable some features
+- `PLAYFAB_FB` to enable Facebook login.
+- `PLAYFAB_GPG` to enable Google Play Game login.
+
 ## Done
 - Export currencies to Playfab
 - Export selling items to Playfab
