@@ -176,6 +176,11 @@ public class PlayfabMonetizationExporter : MonoBehaviour
             {
                 if (currency == null) continue;
                 var code = currency.id;
+                if (code.Length != 2)
+                {
+                    Debug.LogError($"Cannot export currency which its ID is {code}, length must be 2");
+                    continue;
+                }
                 var name = currency.name;
                 var startAmount = currency.startAmount;
                 currencies.Add(new PlayfabCurrency()
