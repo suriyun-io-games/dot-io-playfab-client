@@ -12,15 +12,14 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
 {
     private void Awake()
     {
-#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         InGameProductData.OverrideBuyFunction = BuyFunction;
         InGameProductData.OverrideBuyWithCurrencyIdFunction = BuyWithCurrencyIdFunction;
         MonetizationManager.OverrideSaveAdsReward = SaveAdsReward;
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         MonetizationManager.OverrideProcessPurchase = ProcessPurchase;
 #endif
     }
 
-#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     private static void BuyFunction(InGameProductData productData, System.Action<bool, string> callback)
     {
         if (!productData.CanBuy())
@@ -117,6 +116,7 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
         });
     }
 
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     private static PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs e)
     {
         // NOTE: this code does not account for purchases that were pending and are
