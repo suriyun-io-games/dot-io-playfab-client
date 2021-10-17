@@ -14,16 +14,21 @@ public class PlayfabMonetizationExporter : MonoBehaviour
 {
     public GameInstance gameInstance;
     public MonetizationManager monetizationManager;
+    public InGamePackageData[] packages;
 
     [Header("Catalog")]
     public string exportingCatalogVersion = "Catalog-1";
+
+    public string GetCurrencyCode(string id)
+    {
+        return id.Substring(0, 2);
+    }
 
 #if UNITY_EDITOR
     [ContextMenu("Export Catalog")]
     public void ExportCatalog()
     {
         var allItems = gameInstance.GetAllItems();
-        var allBundles = monetizationManager.products;
         var catalogItems = new Dictionary<string, CatalogItem>();
         if (allItems != null)
         {
@@ -32,14 +37,14 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 if (item == null) continue;
                 var virtualCurrencyPrices = new Dictionary<string, int>();
                 if (!string.IsNullOrEmpty(item.price.id))
-                    virtualCurrencyPrices[item.price.id] = item.price.amount;
+                    virtualCurrencyPrices[GetCurrencyCode(item.price.id)] = item.price.amount;
                 if (item.prices != null)
                 {
                     foreach (var price in item.prices)
                     {
                         if (price == null) continue;
                         if (!string.IsNullOrEmpty(price.id))
-                            virtualCurrencyPrices[price.id] = price.amount;
+                            virtualCurrencyPrices[GetCurrencyCode(price.id)] = price.amount;
                     }
                 }
                 catalogItems[item.GetId()] = new CatalogItem()
@@ -56,6 +61,64 @@ public class PlayfabMonetizationExporter : MonoBehaviour
             }
         }
 
+        var packageCatalogDict = new Dictionary<string, InGamePackageData>();
+
+        if (packages != null)
+        {
+            foreach (var bundle in packages)
+            {
+                if (bundle == null) continue;
+                var virtualCurrencyPrices = new Dictionary<string, int>();
+                if (!string.IsNullOrEmpty(bundle.price.id))
+                    virtualCurrencyPrices[GetCurrencyCode(bundle.price.id)] = bundle.price.amount;
+                if (bundle.prices != null)
+                {
+                    foreach (var price in bundle.prices)
+                    {
+                        if (price == null) continue;
+                        if (!string.IsNullOrEmpty(price.id))
+                            virtualCurrencyPrices[GetCurrencyCode(price.id)] = price.amount;
+                    }
+                }
+
+                var itemIds = new List<string>();
+                if (bundle.items != null)
+                {
+                    foreach (var item in bundle.items)
+                    {
+                        if (item == null) continue;
+                        itemIds.Add(item.GetId());
+                    }
+                }
+
+                var rewardCurrencies = new Dictionary<string, int>();
+                if (bundle.currencies != null)
+                {
+                    foreach (var currency in bundle.currencies)
+                    {
+                        if (currency == null) continue;
+                        rewardCurrencies[currency.id] = currency.amount;
+                    }
+                }
+
+                catalogItems[bundle.GetId()] = new CatalogItem()
+                {
+                    ItemId = bundle.GetId(),
+                    CatalogVersion = exportingCatalogVersion,
+                    DisplayName = bundle.GetTitle(),
+                    Description = bundle.GetDescription(),
+                    VirtualCurrencyPrices = virtualCurrencyPrices,
+                    CustomData = bundle.pricesOption == InGameProductData.PricesOption.Alternative ? "{\"PricesOption\":\"0\"}" : "{\"PricesOption\":\"1\"}",
+                    Consumable = new CatalogConsumable(),
+                    Bundle = new CatalogBundle()
+                    {
+                        BundledItems = itemIds,
+                        BundledVirtualCurrencies = rewardCurrencies,
+                    }
+                };
+            }
+        }
+
 #if !NO_IAP && UNITY_PURCHASING
         var iapCatalog = ProductCatalog.LoadDefaultCatalog();
         var iapCatalogDict = new Dictionary<string, ProductCatalogItem>();
@@ -68,14 +131,16 @@ public class PlayfabMonetizationExporter : MonoBehaviour
             }
         }
 
-        ProductCatalogItem tempIAPItem;
+        var allBundles = monetizationManager.products;
         if (allBundles != null)
         {
+            ProductCatalogItem tempIAPItem;
             foreach (var bundle in allBundles)
             {
                 if (bundle == null) continue;
                 var virtualCurrencyPrices = new Dictionary<string, int>();
                 virtualCurrencyPrices.Add("RM", 0); // TODO: SET USD PRICE
+
                 var itemIds = new List<string>();
                 if (bundle.items != null)
                 {
@@ -85,8 +150,9 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                         itemIds.Add(item.GetId());
                     }
                 }
+
                 var rewardCurrencies = new Dictionary<string, int>();
-                if (bundle.items != null)
+                if (bundle.currencies != null)
                 {
                     foreach (var currency in bundle.currencies)
                     {
@@ -178,8 +244,8 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 var code = currency.id;
                 if (code.Length != 2)
                 {
-                    Debug.LogError($"Cannot export currency which its ID is {code}, length must be 2");
-                    continue;
+                    Debug.LogWarning($"Currency ID {code}, length not equals to 2, it will be changed to " + GetCurrencyCode(code));
+                    code = GetCurrencyCode(code);
                 }
                 var name = currency.name;
                 var startAmount = currency.startAmount;
