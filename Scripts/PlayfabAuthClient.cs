@@ -38,8 +38,10 @@ public class PlayfabAuthClient : MonoBehaviour
     public string username;
     public string password;
 
-    private LoginType autoLoginType;
+    public string Username { get { return username; } set { username = value; } }
+    public string Password { get { return password; } set { password = value; } }
 
+    private LoginType autoLoginType;
     private bool isLoggingIn;
 
     private void Start()
