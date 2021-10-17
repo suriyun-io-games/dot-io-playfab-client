@@ -19,11 +19,6 @@ public class PlayfabMonetizationExporter : MonoBehaviour
     [Header("Catalog")]
     public string exportingCatalogVersion = "Catalog-1";
 
-    public string GetCurrencyCode(string id)
-    {
-        return id.Substring(0, 2);
-    }
-
 #if UNITY_EDITOR
     [ContextMenu("Export Catalog")]
     public void ExportCatalog()
@@ -37,14 +32,14 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 if (item == null) continue;
                 var virtualCurrencyPrices = new Dictionary<string, int>();
                 if (!string.IsNullOrEmpty(item.price.id))
-                    virtualCurrencyPrices[GetCurrencyCode(item.price.id)] = item.price.amount;
+                    virtualCurrencyPrices[item.price.id] = item.price.amount;
                 if (item.prices != null)
                 {
                     foreach (var price in item.prices)
                     {
                         if (price == null) continue;
                         if (!string.IsNullOrEmpty(price.id))
-                            virtualCurrencyPrices[GetCurrencyCode(price.id)] = price.amount;
+                            virtualCurrencyPrices[price.id] = price.amount;
                     }
                 }
                 catalogItems[item.GetId()] = new CatalogItem()
@@ -70,14 +65,14 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 if (bundle == null) continue;
                 var virtualCurrencyPrices = new Dictionary<string, int>();
                 if (!string.IsNullOrEmpty(bundle.price.id))
-                    virtualCurrencyPrices[GetCurrencyCode(bundle.price.id)] = bundle.price.amount;
+                    virtualCurrencyPrices[bundle.price.id] = bundle.price.amount;
                 if (bundle.prices != null)
                 {
                     foreach (var price in bundle.prices)
                     {
                         if (price == null) continue;
                         if (!string.IsNullOrEmpty(price.id))
-                            virtualCurrencyPrices[GetCurrencyCode(price.id)] = price.amount;
+                            virtualCurrencyPrices[price.id] = price.amount;
                     }
                 }
 
@@ -244,8 +239,8 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 var code = currency.id;
                 if (code.Length != 2)
                 {
-                    Debug.LogWarning($"Currency ID {code}, length not equals to 2, it will be changed to " + GetCurrencyCode(code));
-                    code = GetCurrencyCode(code);
+                    Debug.LogError($"Cannot export currency which its ID is {code}, length must be 2");
+                    continue;
                 }
                 var name = currency.name;
                 var startAmount = currency.startAmount;
