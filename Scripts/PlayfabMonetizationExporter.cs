@@ -33,7 +33,7 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                 var virtualCurrencyPrices = new Dictionary<string, int>();
                 if (!string.IsNullOrEmpty(item.price.id))
                     virtualCurrencyPrices[item.price.id] = item.price.amount;
-                if (item.price != null)
+                if (item.prices != null)
                 {
                     foreach (var price in item.prices)
                     {
