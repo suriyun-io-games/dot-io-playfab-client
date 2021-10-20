@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 #if UNITY_EDITOR
@@ -49,7 +48,11 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                     DisplayName = item.GetTitle(),
                     Description = item.GetDescription(),
                     VirtualCurrencyPrices = virtualCurrencyPrices,
-                    CustomData = item.pricesOption == InGameProductData.PricesOption.Alternative ? "{\"PricesOption\":\"0\"}" : "{\"PricesOption\":\"1\"}",
+                    CustomData = JsonMapper.ToJson(new ItemCustomData()
+                    {
+                        PricesOption = (byte)InGameProductData.PricesOption.Alternative,
+                        CanBuyOnlyOnce = item.canBuyOnlyOnce,
+                    }),
                     Consumable = new CatalogConsumable(),
                     Bundle = new CatalogBundle(),
                 };
@@ -103,7 +106,11 @@ public class PlayfabMonetizationExporter : MonoBehaviour
                     DisplayName = bundle.GetTitle(),
                     Description = bundle.GetDescription(),
                     VirtualCurrencyPrices = virtualCurrencyPrices,
-                    CustomData = bundle.pricesOption == InGameProductData.PricesOption.Alternative ? "{\"PricesOption\":\"0\"}" : "{\"PricesOption\":\"1\"}",
+                    CustomData = JsonMapper.ToJson(new ItemCustomData()
+                    {
+                        PricesOption = (byte)InGameProductData.PricesOption.Alternative,
+                        CanBuyOnlyOnce = bundle.canBuyOnlyOnce,
+                    }),
                     Consumable = new CatalogConsumable(),
                     Bundle = new CatalogBundle()
                     {
@@ -344,5 +351,12 @@ public class PlayfabMonetizationExporter : MonoBehaviour
         public string ResultItemType = "ItemId";
         public string ResultItem;
         public int Weight;
+    }
+
+    [System.Serializable]
+    public class ItemCustomData
+    {
+        public byte PricesOption = 0;
+        public bool CanBuyOnlyOnce = false;
     }
 }
