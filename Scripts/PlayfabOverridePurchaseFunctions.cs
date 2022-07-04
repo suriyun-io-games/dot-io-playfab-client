@@ -38,17 +38,18 @@ public class PlayfabOverridePurchaseFunctions : MonoBehaviour
             }
         }, (result) =>
         {
-            Debug.Log("[Playfab Monetization] Your purchase was successful");
             JsonObject jsonResult = (JsonObject)result.FunctionResult;
             string error = (string)jsonResult["Error"];
             if (string.IsNullOrEmpty(error))
             {
+                Debug.Log("[Playfab Monetization] Your purchase was successful");
                 List<object> itemId = (List<object>)jsonResult["ItemId"];
                 if (callback != null)
                     callback.Invoke(true, string.Empty);
             }
             else
             {
+                Debug.LogError("[Playfab Monetization] Your purchase was unsuccessful: " + error);
                 if (callback != null)
                     callback.Invoke(false, error);
             }
