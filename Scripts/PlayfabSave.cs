@@ -94,6 +94,7 @@ public class PlayfabSave : BaseMonetizationSave
             if (!isRefreshFirstTime)
             {
                 isRefreshFirstTime = true;
+                saveInstance.IsPurchasedItemsLoaded = true;
                 if (saveInstance != null)
                     saveInstance.onRefreshFirstTime.Invoke();
             }
