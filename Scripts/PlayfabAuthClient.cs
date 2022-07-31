@@ -55,6 +55,10 @@ public class PlayfabAuthClient : MonoBehaviour
 #if UNITY_ANDROID && PLAYFAB_GPG
         // recommended for debugging:
         PlayGamesPlatform.DebugLogEnabled = true;
+        PlayGamesPlatform.Instance.Authenticate((status) =>
+        {
+            // TODO: May do something
+        });
 #endif
     }
 
@@ -132,36 +136,47 @@ public class PlayfabAuthClient : MonoBehaviour
             return;
         isLoggingIn = true;
         onLoggingIn.Invoke();
-        PlayGamesPlatform.Instance.Authenticate((status) =>
+        if (PlayGamesPlatform.Instance.IsAuthenticated())
         {
-            switch (status)
+            GetGPGServerSideAccessAndLogin();
+        }
+        else
+        {
+            PlayGamesPlatform.Instance.ManuallyAuthenticate((status) =>
             {
-                case SignInStatus.InternalError:
-                    isLoggingIn = false;
-                    // Login Failed
-                    //Debug.LogError("[GPG Login Failed] " + result.Error);
-                    onFail.Invoke("Cannot login with Google Play Games Service");
-                    break;
-                case SignInStatus.Canceled:
-                    isLoggingIn = false;
-                    onCancel.Invoke();
-                    break;
-                default:
-                    // When google play login success, send login request to server
-                    PlayGamesPlatform.Instance.RequestServerSideAccess(false, (idToken) =>
-                    {
-                        // Login Success
-                        PlayFabClientAPI.LoginWithGoogleAccount(new LoginWithGoogleAccountRequest()
-                        {
-                            TitleId = PlayFabSettings.TitleId,
-                            ServerAuthCode = idToken,
-                            CreateAccount = true,
-                        }, OnPlayfabGooglePlayAuthComplete, OnPlayfabGooglePlayAuthFailed);
-                    });
-                    break;
-            }
-        });
+                switch (status)
+                {
+                    case SignInStatus.InternalError:
+                        isLoggingIn = false;
+                        // Login Failed
+                        onFail.Invoke("Cannot login with Google Play Games Service");
+                        break;
+                    case SignInStatus.Canceled:
+                        isLoggingIn = false;
+                        onCancel.Invoke();
+                        break;
+                    default:
+                        GetGPGServerSideAccessAndLogin();
+                        break;
+                }
+            });
+        }
 #endif
+    }
+
+    private void GetGPGServerSideAccessAndLogin()
+    {
+        // When google play login success, send login request to server
+        PlayGamesPlatform.Instance.RequestServerSideAccess(false, (idToken) =>
+        {
+            // Login Success
+            PlayFabClientAPI.LoginWithGoogleAccount(new LoginWithGoogleAccountRequest()
+            {
+                TitleId = PlayFabSettings.TitleId,
+                ServerAuthCode = idToken,
+                CreateAccount = true,
+            }, OnPlayfabGooglePlayAuthComplete, OnPlayfabGooglePlayAuthFailed);
+        });
     }
 
     public void LoginWithPlayFab()
