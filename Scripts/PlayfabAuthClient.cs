@@ -164,6 +164,7 @@ public class PlayfabAuthClient : MonoBehaviour
 #endif
     }
 
+#if UNITY_ANDROID && PLAYFAB_GPG
     private void GetGPGServerSideAccessAndLogin()
     {
         // When google play login success, send login request to server
@@ -178,6 +179,7 @@ public class PlayfabAuthClient : MonoBehaviour
             }, OnPlayfabGooglePlayAuthComplete, OnPlayfabGooglePlayAuthFailed);
         });
     }
+#endif
 
     public void LoginWithPlayFab()
     {
